@@ -12,3 +12,39 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id    String @id @default(uuid())
+  email String @unique
+  name  String?
+  reviews Review[]
+}
+
+model Admin {
+  id    String @id @default(uuid())
+  email String @unique
+  name  String?
+  movies Movie[]
+}
+
+model Movie {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  releaseDate DateTime
+  posterUrl   String?
+  reviews     Review[]
+  createdBy   Admin @relation(fields: [createdById], references: [id])
+  createdById String
+}
+
+model Review {
+  id        String @id @default(uuid())
+  content   String
+  rating    Int 
+  movie     Movie @relation(fields: [movieId], references: [id])
+  movieId   String
+  user      User @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+}
