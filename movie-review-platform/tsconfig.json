@@ -13,10 +13,8 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": ".",  // ✅ Added baseUrl
     "paths": {
-      "@/*": ["./src/*"],
-      "@shadcn/ui/*": ["node_modules/@shadcn/ui/dist/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
