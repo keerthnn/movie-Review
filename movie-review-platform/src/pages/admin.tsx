@@ -1,4 +1,5 @@
-import AddMovieForm from "@/components/AddMovieForm";
-export default function Admin() {
-  return <AddMovieForm />;
+import AdminLogin from "@/components/AdminLogin";
+
+export default function AdminPage() {
+  return <AdminLogin />;
 }

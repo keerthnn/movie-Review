@@ -1,9 +1,13 @@
 import MoviesList from "@/components/MoviesList";
+import Navbar from "@/components/Navbar";
 
 export default function MoviesPage() {
   return (
-    <div className="container mx-auto">
-      <MoviesList />
-    </div>
+    <>
+    <Navbar />
+      <div className="container mx-auto">
+        <MoviesList />
+      </div>
+      </>
   );
 }

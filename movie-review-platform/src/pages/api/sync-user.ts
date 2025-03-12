@@ -7,17 +7,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { firebaseUid, email } = req.body;
+    const { firebaseUid, email, name } = req.body;
     if (!firebaseUid || !email) {
       return res.status(400).json({ message: "Missing user data" });
     }
 
     // Check if user exists
-    let user = await prisma.user.findUnique({ where: { firebaseUid } });
+    let user = await prisma.user.findUnique({
+      where: { firebaseUid },
+    });
 
-    if (!user) {
+    if (user) {
+      // Update user if already exists
+      user = await prisma.user.update({
+        where: { firebaseUid },
+        data: { email, name },
+      });
+    } else {
+      // Create new user if not found
       user = await prisma.user.create({
-        data: { firebaseUid, email },
+        data: { firebaseUid, email, name },
       });
     }
 

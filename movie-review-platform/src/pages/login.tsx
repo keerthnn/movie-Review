@@ -1,6 +1,6 @@
+import Navbar from "@/components/Navbar";
 import AuthForm from "../components/AuthForm";
-import Login from "../components/AuthForm";
 
 export default function LoginPage() {
-  return <AuthForm />;
+  return  <AuthForm/>;
 }

@@ -2,18 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { auth } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import axios from "axios";
+import "@/styles/globals.css";
 
 interface UserCredentials {
+  id?: string;
+  name?: string;
   email: string;
   password: string;
 }
 
 export default function AuthForm() {
-  const [credentials, setCredentials] = useState<UserCredentials>({ email: "", password: "" });
+  const [credentials, setCredentials] = useState<UserCredentials>({
+    id: "",
+    name: "",
+    email: "",
+    password: "",
+  });
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -26,33 +35,83 @@ export default function AuthForm() {
     setError("");
 
     try {
-      let userCredential;
-      if (isSignUp) {
-        userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+      if (isAdmin) {
+        // 🔹 Admin login: Verify in PostgreSQL, no Firebase auth
+        const response = await axios.post("/api/auth-admin", {
+          id: credentials.id,
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        const { token } = response.data;
+        localStorage.setItem("token", token);
+        router.push("/add-movie"); // Redirect Admin
       } else {
-        userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+        // 🔹 User Login
+        let userCredential;
+
+        if (isSignUp) {
+          // Sign up new user in Firebase
+          userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+        } else {
+          // Check if user exists in PostgreSQL **before attempting Firebase login**
+          const userExists = await axios.post("/api/check-user", { email: credentials.email });
+
+          if (!userExists.data.exists) {
+            throw new Error("User does not exist. Please sign up first.");
+          }
+
+          // Proceed with Firebase login
+          userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+        }
+
+        const firebaseUid = userCredential.user.uid;
+        const email = userCredential.user.email;
+        const name = isSignUp ? credentials.name : undefined;
+
+        // Sync only if signing up
+        if (isSignUp) {
+          await axios.post("/api/sync-user", { firebaseUid, email, name });
+        }
+
+        // Store token and redirect
+        const token = await userCredential.user.getIdToken();
+        localStorage.setItem("token", token);
+        router.push("/");
       }
-
-      const firebaseUid = userCredential.user.uid;
-      const email = userCredential.user.email;
-
-      // Sync user to PostgreSQL
-      await axios.post("/api/sync-user", { firebaseUid, email });
-
-      // Store token and redirect
-      const token = await userCredential.user.getIdToken();
-      localStorage.setItem("token", token);
-      router.push("/"); // Redirect to MoviesList
     } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     }
   };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold">{isSignUp ? "Sign Up" : "Log In"}</h2>
+      <h2 className="text-xl font-bold">{isAdmin ? "Admin Login" : isSignUp ? "User Sign Up" : "User Log In"}</h2>
       {error && <p className="text-red-500">{error}</p>}
+      
       <form onSubmit={handleSubmit} className="space-y-4">
+        {isAdmin && (
+          <input
+            type="text"
+            name="id"
+            placeholder="Admin ID"
+            value={credentials.id}
+            onChange={handleChange}
+            required
+            className="w-full p-2 border rounded"
+          />
+        )}
+        {!isAdmin && isSignUp && (
+          <input
+            type="text"
+            name="name"
+            placeholder="Name"
+            value={credentials.name}
+            onChange={handleChange}
+            required
+            className="w-full p-2 border rounded"
+          />
+        )}
         <input
           type="email"
           name="email"
@@ -72,11 +131,18 @@ export default function AuthForm() {
           className="w-full p-2 border rounded"
         />
         <button type="submit" className="w-full p-2 bg-blue-600 text-white rounded">
-          {isSignUp ? "Sign Up" : "Log In"}
+          {isAdmin ? "Admin Log In" : isSignUp ? "Sign Up" : "Log In"}
         </button>
       </form>
-      <button onClick={() => setIsSignUp(!isSignUp)} className="text-blue-500 mt-2">
-        {isSignUp ? "Already have an account? Log in" : "Don't have an account? Sign up"}
+
+      {!isAdmin && (
+        <button onClick={() => setIsSignUp(!isSignUp)} className="text-blue-500 mt-2">
+          {isSignUp ? "Already have an account? Log in" : "Don't have an account? Sign up"}
+        </button>
+      )}
+
+      <button onClick={() => setIsAdmin(!isAdmin)} className="text-gray-500 mt-2 block">
+        {isAdmin ? "Switch to User Login" : "Admin Login"}
       </button>
     </div>
   );

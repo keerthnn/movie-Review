@@ -3,7 +3,7 @@ import { authenticate } from "@/middleware/auth";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  await authenticate(req, res);
+  await authenticate(req, res); // Now ensures only admins can proceed
 
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });

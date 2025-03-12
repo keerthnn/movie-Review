@@ -1,5 +1,6 @@
 import admin from "firebase-admin";
 import { NextApiRequest, NextApiResponse } from "next";
+import prisma from "@/lib/prisma"; // Import Prisma
 
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
@@ -23,16 +24,20 @@ export async function authenticate(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
-    (req as any).user = decodedToken;
+
+    // Fetch user from the Admin table in PostgreSQL
+    const adminUser = await prisma.admin.findUnique({
+      where: { firebaseUid: decodedToken.uid },
+    });
+
+    if (!adminUser) {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    // Attach admin details to the request
+    (req as any).user = { uid: decodedToken.uid, email: decodedToken.email };
   } catch (error) {
     console.error("Authentication error:", error);
     return res.status(401).json({ message: "Invalid token" });
   }
-}
-
-export async function isAdmin(user: any): Promise<boolean> {
-  if (!user) return false;
-
-  // Example: Checking admin claim in Firebase
-  return user.admin === true; // Make sure to set this claim in Firebase console or Firebase functions
 }
