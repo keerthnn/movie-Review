@@ -1,7 +1,10 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 
+// Define Movie interface
 interface Movie {
   id: string;
   title: string;
@@ -12,10 +15,27 @@ interface Movie {
 
 export default function MoviesList() {
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    axios.get("/api/movies").then((res) => setMovies(res.data));
+    const fetchMovies = async () => {
+      try {
+        const res = await axios.get("/api/get-movie");
+        setMovies(res.data);
+      } catch (err) {
+        setError("Failed to load movies.");
+        console.error("Error fetching movies:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovies();
   }, []);
+
+  if (loading) return <p>Loading movies...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="p-4">

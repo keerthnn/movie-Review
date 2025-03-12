@@ -14,18 +14,21 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(uuid())
-  email String @unique
-  name  String?
-  reviews Review[]
+  id          String @id @default(uuid())
+  firebaseUid String @unique // Firebase UID
+  email       String @unique
+  name        String?
+  reviews     Review[]
 }
 
 model Admin {
-  id    String @id @default(uuid())
-  email String @unique
-  name  String?
-  movies Movie[]
+  id          String @id @default(uuid())
+  firebaseUid String @unique // Firebase UID
+  email       String @unique
+  name        String?
+  movies      Movie[]
 }
+
 
 model Movie {
   id          String @id @default(uuid())

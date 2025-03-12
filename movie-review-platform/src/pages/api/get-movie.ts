@@ -8,9 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const movies = await prisma.movie.findMany({
-      include: {
-        reviews: true, // Include reviews if they exist
-      },
+      include: { reviews: true },
     });
 
     return res.status(200).json(movies);
