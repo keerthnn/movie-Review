@@ -1,17 +1,18 @@
 import prisma from "@/lib/prisma";
-import { authenticate } from "@/middleware/auth";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  await authenticate(req, res); // Now ensures only admins can proceed
-
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
   try {
-    const { title, description, releaseDate, posterUrl } = req.body;
-    const userId = (req as any).user.uid;
+    const { title, description, releaseDate, posterUrl, createdById } = req.body;
+
+    // Ensure admin ID is present
+    if (!createdById) {
+      return res.status(400).json({ message: "Admin ID is required" });
+    }
 
     const movie = await prisma.movie.create({
       data: {
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         description,
         releaseDate: new Date(releaseDate),
         posterUrl,
-        createdById: userId,
+        createdById, // Use admin ID from request body
       },
     });
 
