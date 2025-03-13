@@ -2,27 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import "@/styles/globals.css";
-
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
+    // Check authentication state
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        sessionStorage.setItem("loggedIn", "true");
+      } else {
+        setUser(null);
+        sessionStorage.removeItem("loggedIn");
+      }
     });
+
     return () => unsubscribe();
   }, []);
 
   const handleLogout = async () => {
     await signOut(auth);
-    localStorage.removeItem("token");
-    router.push("/"); // Redirect to login page
+    sessionStorage.removeItem("loggedIn");
+    setUser(null); // Ensure UI updates immediately
+    router.push("/");
   };
 
   return (
@@ -31,18 +39,17 @@ export default function Navbar() {
         MovieReview
       </Link>
 
-      <div>
+      <div className="flex items-center gap-4">
         {user ? (
-          <div className="relative group">
-            <button className="px-4 py-2 bg-gray-700 rounded">
-              {user.email}
+          <>
+            <span className="text-sm sm:text-base">{user.email}</span>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 rounded text-white hover:bg-red-700"
+            >
+              Logout
             </button>
-            <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={handleLogout} className="block px-4 py-2 hover:bg-gray-200 w-full text-left">
-                Logout
-              </button>
-            </div>
-          </div>
+          </>
         ) : (
           <Link href="/login" className="px-4 py-2 bg-blue-600 rounded">
             Login

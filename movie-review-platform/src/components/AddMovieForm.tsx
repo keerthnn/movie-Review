@@ -18,6 +18,7 @@ interface Movie {
   description: string;
   releaseDate: string;
   posterUrl?: string;
+  createdById: string; // Add this line
 }
 
 export default function AddMovieForm() {
@@ -65,6 +66,7 @@ export default function AddMovieForm() {
       setMovies(adminMovies);
     } catch (error) {
       console.error("Error fetching movies:", error);
+      
     }
   };
 
