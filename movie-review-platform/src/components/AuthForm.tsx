@@ -4,10 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { auth } from "@/lib/firebase";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import "@/styles/globals.css";
 
 interface UserCredentials {
@@ -55,27 +52,17 @@ export default function AuthForm() {
 
         if (isSignUp) {
           // Sign up new user in Firebase
-          userCredential = await createUserWithEmailAndPassword(
-            auth,
-            credentials.email,
-            credentials.password
-          );
+          userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
         } else {
           // Check if user exists in PostgreSQL **before attempting Firebase login**
-          const userExists = await axios.post("/api/check-user", {
-            email: credentials.email,
-          });
+          const userExists = await axios.post("/api/check-user", { email: credentials.email });
 
           if (!userExists.data.exists) {
             throw new Error("User does not exist. Please sign up first.");
           }
 
           // Proceed with Firebase login
-          userCredential = await signInWithEmailAndPassword(
-            auth,
-            credentials.email,
-            credentials.password
-          );
+          userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
         }
 
         const firebaseUid = userCredential.user.uid;
@@ -90,17 +77,6 @@ export default function AuthForm() {
         // Store token and redirect
         const token = await userCredential.user.getIdToken();
         localStorage.setItem("token", token);
-        
-
-        const userIdResponse = await axios.post("/api/get-user-id", {
-          email: credentials.email,
-        });
-        const userId = userIdResponse.data.userId;
-
-        console.log("User ID:", userId);
-
-        // 🔹 Store user ID in localStorage if needed
-        localStorage.setItem("userId", userId);
         router.push("/");
       }
     } catch (err: any) {
@@ -110,11 +86,9 @@ export default function AuthForm() {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold">
-        {isAdmin ? "Admin Login" : isSignUp ? "User Sign Up" : "User Log In"}
-      </h2>
+      <h2 className="text-xl font-bold">{isAdmin ? "Admin Login" : isSignUp ? "User Sign Up" : "User Log In"}</h2>
       {error && <p className="text-red-500">{error}</p>}
-
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         {isAdmin && (
           <input
@@ -156,29 +130,18 @@ export default function AuthForm() {
           required
           className="w-full p-2 border rounded"
         />
-        <button
-          type="submit"
-          className="w-full p-2 bg-blue-600 text-white rounded"
-        >
+        <button type="submit" className="w-full p-2 bg-blue-600 text-white rounded">
           {isAdmin ? "Admin Log In" : isSignUp ? "Sign Up" : "Log In"}
         </button>
       </form>
 
       {!isAdmin && (
-        <button
-          onClick={() => setIsSignUp(!isSignUp)}
-          className="text-blue-500 mt-2"
-        >
-          {isSignUp
-            ? "Already have an account? Log in"
-            : "Don't have an account? Sign up"}
+        <button onClick={() => setIsSignUp(!isSignUp)} className="text-blue-500 mt-2">
+          {isSignUp ? "Already have an account? Log in" : "Don't have an account? Sign up"}
         </button>
       )}
 
-      <button
-        onClick={() => setIsAdmin(!isAdmin)}
-        className="text-gray-500 mt-2 block"
-      >
+      <button onClick={() => setIsAdmin(!isAdmin)} className="text-gray-500 mt-2 block">
         {isAdmin ? "Switch to User Login" : "Admin Login"}
       </button>
     </div>
