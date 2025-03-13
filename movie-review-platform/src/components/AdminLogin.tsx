@@ -39,6 +39,7 @@ export default function AdminLogin() {
         // Store token and redirect
         const token = await userCredential.user.getIdToken();
         localStorage.setItem("token", token);
+        localStorage.setItem("adminId", credentials.id); 
         router.push("/add-movie"); // Redirect to Admin Dashboard
       } else {
         setError("Unauthorized access");

@@ -17,9 +17,29 @@ export default function AddMovieForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.post("/api/movies", { title, description, releaseDate, posterUrl, createdById: "admin-id" });
-    router.push("/");
+  
+    const createdById = localStorage.getItem("adminId"); // Get admin ID from local storage
+    if (!createdById) {
+      alert("Admin ID not found. Please log in again."); // Show alert if admin ID is missing
+      return;
+    }
+  
+    try {
+      await axios.post("/api/add-movie", { 
+        title, 
+        description, 
+        releaseDate, 
+        posterUrl, 
+        createdById // Pass admin ID to the backend
+      });
+  
+      router.push("/"); // Redirect to homepage after adding movie
+    } catch (error) {
+      console.error("Failed to add movie:", error);
+      alert("Failed to add movie. Please try again.");
+    }
   };
+  
 
   return (
     <div className="flex justify-center items-center min-h-screen">

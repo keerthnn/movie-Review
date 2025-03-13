@@ -24,7 +24,7 @@ export async function authenticate(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
-
+    console.log(decodedToken);
     // Fetch user from the Admin table in PostgreSQL
     const adminUser = await prisma.admin.findUnique({
       where: { firebaseUid: decodedToken.uid },
