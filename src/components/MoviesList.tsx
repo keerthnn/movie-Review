@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import Image from "next/image";
 
 
 // Define Movie interface
@@ -45,7 +46,7 @@ export default function MoviesList() {
         {movies.map((movie) => (
           <Link key={movie.id} href={`/movies/${movie.id}`}>
             <div className="border p-4 rounded-lg shadow-md hover:shadow-xl transition">
-              {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} className="w-full h-48 object-cover" />}
+              {movie.posterUrl && <Image src={movie.posterUrl} alt={movie.title} className="w-full h-48 object-cover" />}
               <h2 className="text-xl font-semibold mt-2">{movie.title}</h2>
               <p className="text-gray-600">{movie.description}</p>
             </div>

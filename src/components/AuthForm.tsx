@@ -39,9 +39,7 @@ export default function AuthForm() {
         router.push("/");
       } else {
         // 🔹 User Login
-        const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
-        const firebaseUid = userCredential.user.uid;
-
+        await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
         // 🔹 Get User Role
         const response = await axios.post("/api/check-role", { email: credentials.email });
 
@@ -53,9 +51,16 @@ export default function AuthForm() {
           setError("Unauthorized user role");
         }
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "An error occurred.");
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
     }
+    
   };
 
   return (

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import axios, { Axios, AxiosError } from "axios";
 import { auth } from "@/lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 interface Movie {
   id: string;
@@ -49,7 +50,7 @@ export default function AddMovieForm() {
           setError("Access Denied: You are not an admin.");
           router.push("/");
         }
-      } catch (error) {
+      } catch (error: unknown) { // Change 'any' to 'unknown'
         console.error("Error checking admin status:", error);
         setError("Failed to verify admin status.");
       }
@@ -63,7 +64,7 @@ export default function AddMovieForm() {
       const res = await axios.get(`/api/get-movie`);
       const adminMovies = res.data.filter((movie: Movie) => movie.createdById === adminId);
       setMovies(adminMovies);
-    } catch (error) {
+    } catch (error: unknown) { // Change 'any' to 'unknown'
       console.error("Error fetching movies:", error);
       
     }
@@ -92,9 +93,14 @@ export default function AddMovieForm() {
       setReleaseDate("");
       setPosterUrl("");
       fetchMovies(adminId);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to add movie.");
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        setError(error.response?.data?.message || "Failed to add movie.");
+      } else {
+        setError("An unexpected error occurred.");
+      }
     }
+    
   };
 
   const handleEditMovie = async () => {
@@ -164,9 +170,11 @@ export default function AddMovieForm() {
             {movies.map((movie) => (
               <Card key={movie.id} className="overflow-hidden shadow-md hover:shadow-lg transition">
                 {movie.posterUrl ? (
-                  <img
+                  <Image
                     src={movie.posterUrl}
                     alt={movie.title}
+                    width={500}
+                    height={600}
                     className="w-full h-60 object-cover"
                   />
                 ) : (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Review {
   id: string;
@@ -36,7 +37,7 @@ export default function MovieDetails() {
   return (
     <div className="p-4">
       <h1 className="text-3xl font-bold">{movie.title}</h1>
-      {movie.posterUrl && <img src={movie.posterUrl} alt={movie.title} className="w-full h-96 object-cover my-4" />}
+      {movie.posterUrl && <Image src={movie.posterUrl} alt={movie.title} className="w-full h-96 object-cover my-4" />}
       <p>{movie.description}</p>
       <p className="text-gray-500 mt-2">Release Date: {new Date(movie.releaseDate).toDateString()}</p>
 

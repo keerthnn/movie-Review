@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import { signOut, onAuthStateChanged } from "firebase/auth";
+import { signOut, onAuthStateChanged, User } from "firebase/auth"; // Import User type
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
