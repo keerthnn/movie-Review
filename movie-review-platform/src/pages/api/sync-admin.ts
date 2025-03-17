@@ -13,12 +13,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: "Missing admin data" });
     }
 
-    // Check if admin exists
-    let admin = await prisma.admin.findUnique({
-      where: { id },
+    // Check if admin exists with all credentials
+    const admin = await prisma.admin.findUnique({
+      where: { id, email, firebaseUid },
     });
 
-    if (!admin || admin.email !== email || admin.firebaseUid !== firebaseUid) {
+    if (!admin) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 

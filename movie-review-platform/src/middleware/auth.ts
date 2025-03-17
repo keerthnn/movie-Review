@@ -35,7 +35,11 @@ export async function authenticate(req: NextApiRequest, res: NextApiResponse) {
     }
 
     // Attach admin details to the request
-    (req as any).user = { uid: decodedToken.uid, email: decodedToken.email };
+    interface AuthenticatedRequest extends NextApiRequest {
+      user?: { uid: string; email?: string };
+    }
+    (req as AuthenticatedRequest).user = { uid: decodedToken.uid, email: decodedToken.email };
+    
   } catch (error) {
     console.error("Authentication error:", error);
     return res.status(401).json({ message: "Invalid token" });
