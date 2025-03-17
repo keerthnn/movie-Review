@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
-import "@/styles/globals.css";
 
 
 export default function ReviewForm() {
@@ -11,7 +10,6 @@ export default function ReviewForm() {
   const router = useRouter();
   const { id } = router.query;
 
-  // ✅ Get userId from localStorage when component mounts
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {

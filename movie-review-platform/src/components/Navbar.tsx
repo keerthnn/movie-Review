@@ -5,7 +5,6 @@ import { auth } from "@/lib/firebase";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import "@/styles/globals.css";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import "@/styles/globals.css";
 
 
 // Define Movie interface
